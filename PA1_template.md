@@ -5,13 +5,7 @@ output:
     keep_md: true
 ---
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
-## load pacages
-library(dplyr)
-library(magrittr)
-library(knitr)
-library(tidyverse)
-```
+
 ## Introduction
 This assignment makes use of data from a personal activity monitoring device. This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.  The goal of this assigment is to use the data to answer the following questions:
 
@@ -36,7 +30,8 @@ The variables included in this dataset are:
   - interval: Identifier for the 5-minute interval in which measurement was taken  
 
 to read the data make sure that the "activity.csv" is in the working directory and use the follwoing code chnk to load the data.
-```{r CodeChunk_1}
+
+```r
 act<-read.csv("activity.csv")
 act$date<- as.Date(act$date)
 ```
@@ -49,7 +44,8 @@ The following code chunk helps answer this question.  it involves three steps
   - sumerize to find total number of steps,  
   - calculate mean median of total number of steps per day and plot histogram
   
-```{r CodeChunk_2}
+
+```r
 ## group by date and use function sumerize_at with function sum to find the total number of steps each day then calculae mean median and plot a histogram 
 mytot<- act %>% group_by(date) %>% 
     summarise_at(vars(steps),sum,na.rm=TRUE)
@@ -61,9 +57,17 @@ hist(mytot$steps,12,col="blue",
      xlab="Steps")
 rug(mytot$steps,col="blue")
 abline(v=mymedian,col="green",lwd=3)
+```
 
+![](PA1_template_files/figure-html/CodeChunk_2-1.png)<!-- -->
+
+```r
 paste("the mean total number of steps taken per day is: ",format(mymean,digits=1),
        "and the median is: ",mymedian,sep=" ")
+```
+
+```
+## [1] "the mean total number of steps taken per day is:  9354 and the median is:  10395"
 ```
 
 ## What is the average daily activity pattern?
@@ -78,7 +82,8 @@ To answer this question:
   - find the mean for each inteval from all days.  na.rm option is used because the data has missing point
   - the data can be ploted 
   - the interval containing maximum number of steps is found an labeled on the plot
-```{r CodeChunk_3}
+
+```r
 ## group act by interval and the find mean for each interval across different dates
 ## construct a plot
 ## find and label the 5-minute interval that, on average, contains the maximum umber of steps
@@ -90,12 +95,20 @@ itsp <- act %>% group_by(interval) %>%
          ylab="average steps in 5 min. interval")
     maxint<-itsp[which.max(itsp$steps),1]
     abline(v=maxint,lwd=2,col="blue")
-    
+```
+
+![](PA1_template_files/figure-html/CodeChunk_3-1.png)<!-- -->
+
+```r
    paste("The 5-minute interval with maximum number of steps is interval: ",maxint,
          "and the maximum number of steps  in that intervals is: ", 
          format(max(itsp$steps),digits=0 ),"steps",
          sep=" ")
-```   
+```
+
+```
+## [1] "The 5-minute interval with maximum number of steps is interval:  835 and the maximum number of steps  in that intervals is:  206 steps"
+```
   
 ## Imputing missing values
 
@@ -112,7 +125,8 @@ The follwoing code chunck implement the strategy for imputing missing data
   - identify the intervals with missing data 
   - detemine the average for these inteval from all the other days where the interval values were not missing using (na.rm)
   
-```{r CodeChunk_4}
+
+```r
 ## copy the original accivity data act to mact
 ## loop through the rows of itsp (the datafrme fram ## CodeChunk_3)
 ## look for NA missing data for and use the value from itsp to fill it.  itsp is the 
@@ -124,12 +138,12 @@ The follwoing code chunck implement the strategy for imputing missing data
         mact[mact$interval==myint & is.na(mact$steps),1] <- itsp$steps[i]
        }
    }
-
 ```
  
  the code chunck below calculates the mean and median after imputing the data.
  
-```{r CodeChunk_5}
+
+```r
 ##Calculate and report the total number of missing values 
 nmisng<-sum(is.na(act$steps))
 mnmsng<-mean(is.na(act$steps))
@@ -138,10 +152,14 @@ paste("total number of missing values in the dataset is: ",nmisng,
 "which is about",format(100*mnmsng,digits=0),"%",sep=" ")
 ```
 
+```
+## [1] "total number of missing values in the dataset is:  2304 which is about 13 %"
+```
+
 Histogram of the total number of steps taken each day after imputing missing values 
 
-```{r CodeChunk_6}
 
+```r
 mytot<- mact %>% group_by(date) %>% 
     summarise_at(vars(steps),sum,na.rm=TRUE)
 
@@ -153,13 +171,26 @@ hist(mytot$steps,12,col="blue",
      xlab="Steps")
 rug(mytot$steps,col="blue")
 abline(v=mymedian2,col="green",lwd=3)
+```
 
+![](PA1_template_files/figure-html/CodeChunk_6-1.png)<!-- -->
 
+```r
 paste("after imputing missing data, the mean total number of steps taken per day is: ",format(mymean2,digits=1),
        "and the median is: ",format(mymedian2,digits=1),sep=" ")
+```
 
+```
+## [1] "after imputing missing data, the mean total number of steps taken per day is:  10766 and the median is:  10766"
+```
+
+```r
 paste("befor imputing missing data, the mean total number of steps taken per day was: ",format(mymean,digits=1),
        "and the median is: ",mymedian,sep=" ")
+```
+
+```
+## [1] "befor imputing missing data, the mean total number of steps taken per day was:  9354 and the median is:  10395"
 ```
 
 it is seen that both the mean and median change after imputing missing data.  It is also interesting to note that both mean and median are equal after imputing missing data.  This may be an artifact of the missing data estimation scheme, which used average interval across other days.  
@@ -168,7 +199,8 @@ it is seen that both the mean and median change after imputing missing data.  It
 
 The follwoing Panel plot compares the average number of steps taken per 5-minute interval across weekdays and weekends.  To do this, a variable is.weekend was calculated in the code chunk below.  Then, group_by (is.weekend,interval) and summerize_at(steps) to find the total number of steps per day.  ggplot was used to construct the panel plot and the facet_grid(is.weekend ~.) was used to split the data into two panels.
 
-```{r CodeChunk_7}
+
+```r
 mact$day<-weekdays(mact$date) 
 
 mact$is.weekend [mact$day %in% c("Saturday","Sunday")] <- "Weekend"
@@ -184,6 +216,8 @@ p+geom_line()+
   theme_bw()+
   theme(legend.position="none")
 ```
+
+![](PA1_template_files/figure-html/CodeChunk_7-1.png)<!-- -->
 
 Based on these plots it appears that the weekdays have higher activity levels than the weekdend.
 
